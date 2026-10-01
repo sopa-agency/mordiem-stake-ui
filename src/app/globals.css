@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Mordiem Stake tokens. Night (true black) is the default surface; Day is a cool technical paper.
+   Signal (ultramarine) is for actions only. Charge (amber) is for credit/energy only. Thaw is for queues. */
+:root, :root[data-surface="night"] {
+  color-scheme: dark;
+  --paper: #000000;
+  --sheet: #0C0D12;
+  --sheet-2: #15161D;
+  --sheet-3: #1D1F28;
+  --ink: #F2F4F8;
+  --ink-2: #AEB4C2;
+  --ink-3: #6C7384;
+  --rule: #24262F;
+  --rule-2: #1A1B22;
+  --signal: #5B86FF;
+  --signal-2: #7DA0FF;
+  --signal-ink: #04102C;
+  --signal-soft: rgba(91, 134, 255, 0.14);
+  --charge: #FFC53D;
+  --charge-2: #FFD266;
+  --charge-deep: #E0A400;
+  --thaw: #4C86D6;
+  --good: #45C98A;
+  --bad: #FF6B61;
+  --lift: 0 1px 0 rgba(255, 255, 255, 0.04), 0 12px 30px -14px rgba(0, 0, 0, 0.9);
+  --edge: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  --glow: 0 10px 24px -10px var(--signal);
+}
+:root[data-surface="day"] {
+  color-scheme: light;
+  --paper: #EEF2F7;
+  --sheet: #FFFFFF;
+  --sheet-2: #F6F8FB;
+  --sheet-3: #ECF0F6;
+  --ink: #0B1B3F;
+  --ink-2: #44506B;
+  --ink-3: #8A94AB;
+  --rule: #CFD7E6;
+  --rule-2: #E3E9F2;
+  --signal: #0A3DFF;
+  --signal-2: #2E5BFF;
+  --signal-ink: #FFFFFF;
+  --signal-soft: rgba(10, 61, 255, 0.10);
+  --charge: #F5B300;
+  --charge-2: #FFD266;
+  --charge-deep: #B97E00;
+  --thaw: #9CC8FF;
+  --good: #138A4F;
+  --bad: #C8322B;
+  --lift: 0 1px 2px rgba(11, 27, 63, 0.08), 0 8px 24px -12px rgba(11, 27, 63, 0.25);
+  --edge: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  --glow: 0 10px 24px -10px rgba(10, 61, 255, 0.55);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-sheet: var(--sheet);
+  --color-sheet-2: var(--sheet-2);
+  --color-sheet-3: var(--sheet-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-2: var(--rule-2);
+  --color-signal: var(--signal);
+  --color-signal-2: var(--signal-2);
+  --color-signal-ink: var(--signal-ink);
+  --color-charge: var(--charge);
+  --color-charge-2: var(--charge-2);
+  --color-charge-deep: var(--charge-deep);
+  --color-thaw: var(--thaw);
+  --color-good: var(--good);
+  --color-bad: var(--bad);
+  --font-display: var(--font-display), "Archivo", system-ui, sans-serif;
+  --font-body: var(--font-body), "Helvetica Neue", Arial, sans-serif;
+  --radius-control: 10px;
+  --radius-sheet: 14px;
+  --ease-spring: cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+html, body { background: var(--paper); color: var(--ink); }
+body { font-family: var(--font-body), "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; min-height: 100%; }
+.font-display { font-family: var(--font-display), "Archivo", system-ui, sans-serif; letter-spacing: -0.02em; font-variation-settings: "opsz" 96; }
+.num { font-variant-numeric: tabular-nums; }
+.lift { box-shadow: var(--lift); }
+.edge { box-shadow: var(--edge); }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 6px; }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* grain over true black so it never reads as a flat void */
+.grain::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.06; mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"); }
+:root[data-surface="day"] .grain::before { opacity: 0.035; mix-blend-mode: multiply; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
