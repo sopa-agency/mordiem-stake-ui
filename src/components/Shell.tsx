@@ -72,7 +72,7 @@ function Footer() {
   return (
     <footer className="border-t border-rule-2">
       <p className="num mx-auto w-full max-w-[1200px] px-4 pb-28 pt-5 text-[12px] leading-relaxed text-ink-3 min-[720px]:px-8 min-[720px]:pb-6">
-        Reads Base every 12 s · MDM {price !== null ? `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '…'} (Aerodrome pool) · Open source · Contracts on Basescan:{' '}
+        Reads Base every 12 s · MDM {price !== null ? `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '…'} (Aerodrome pool) · <a href="https://github.com/sopa-agency/mordiem-stake-ui" target="_blank" rel="noreferrer" className="hover:text-ink-2">Open source ↗</a> · Contracts on Basescan:{' '}
         {links.map(([name, addr], i) => (
           <span key={name}>
             {i > 0 && ' · '}
