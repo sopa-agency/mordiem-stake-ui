@@ -3,7 +3,7 @@ import { Bricolage_Grotesque, Instrument_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 
-const display = Bricolage_Grotesque({ subsets: ['latin'], variable: '--font-display', axes: ['opsz'], weight: ['500', '700', '800'] });
+const display = Bricolage_Grotesque({ subsets: ['latin'], variable: '--font-display', axes: ['opsz'], weight: 'variable' });
 const body = Instrument_Sans({ subsets: ['latin'], variable: '--font-body', weight: ['400', '500', '600'] });
 
 export const metadata: Metadata = {
