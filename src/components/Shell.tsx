@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Dock, PillNav, SurfaceToggle, ToastProvider } from '@/components/ui';
 import { WalletMenu } from '@/components/wallet/WalletMenu';
+import { VladGuide } from '@/components/VladGuide';
 import { useProtocol } from '@/hooks/useProtocol';
 import { useSurface } from '@/hooks/useSurface';
 import { ADDR, addrUrl } from '@/lib/contracts/addresses';
@@ -48,7 +49,10 @@ export function Shell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-4 pb-10 pt-6 min-[720px]:px-8 min-[720px]:gap-10 min-[720px]:pt-8">{children}</main>
+        <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-4 pb-10 pt-6 min-[720px]:px-8 min-[720px]:gap-10 min-[720px]:pt-8">
+          {children}
+          <VladGuide key={pathname} />
+        </main>
         <Footer />
         <Dock items={NAV} current={pathname} />
       </div>
