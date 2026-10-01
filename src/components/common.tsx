@@ -1,6 +1,7 @@
 'use client';
 // Small shared pieces for the screens: a ticking clock store, panel chrome, ledger rows, stats and the connect prompt.
 import { useSyncExternalStore, type ReactNode } from 'react';
+import Link from 'next/link';
 import { formatUnits } from 'viem';
 import { cn } from '@/components/ui';
 import { WalletMenu } from '@/components/wallet/WalletMenu';
@@ -33,10 +34,10 @@ export function reserveChangePending(now: number | null): boolean {
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-/** "Oct 4" in the user's zone. Only call once `useNow()` is non-null (client), so server and client markup agree. */
-export const shortDateLocal = (tsSec: number) => {
+/** "Oct 4" (UTC date, as the schedule is stated). The Protocol card prints the full local + UTC time. */
+export const shortDateUtc = (tsSec: number) => {
   const d = new Date(tsSec * 1000);
-  return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 };
 
 // ───────────────────────────── clock ─────────────────────────────
@@ -103,12 +104,28 @@ export function Panel({ eyebrow, title, aside, children, className }: { eyebrow?
   );
 }
 
-/** Hairline ledger row: label on the left, number on the right (or a big figure when `big`). */
-export function LedgerRow({ label, sub, value, unit, big, action, className }: { label: ReactNode; sub?: ReactNode; value: ReactNode; unit?: string; big?: boolean; action?: ReactNode; className?: string }) {
+/** Page header: eyebrow, title, optional controls on the right. */
+export function PageHeader({ eyebrow, title, aside, children }: { eyebrow: string; title: string; aside?: ReactNode; children?: ReactNode }) {
   return (
-    <div className={cn('flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-rule-2 py-3', className)}>
-      <div className="min-w-0">
-        <div className={cn('text-ink-2', big ? 'text-[13px] font-medium uppercase tracking-[0.08em] text-ink-3' : 'text-[14px]')}>{label}</div>
+    <header className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0">
+          <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-3">{eyebrow}</div>
+          <h1 className="font-display text-[28px] font-semibold leading-tight text-ink min-[720px]:text-[32px]">{title}</h1>
+        </div>
+        {aside && <div className="flex flex-wrap items-center gap-2">{aside}</div>}
+      </div>
+      {children}
+    </header>
+  );
+}
+
+/** Hairline ledger row: label on the left, number on the right (or a big figure when `big`), optional link to its tab. */
+export function LedgerRow({ label, sub, value, unit, big, action, to, className }: { label: ReactNode; sub?: ReactNode; value: ReactNode; unit?: string; big?: boolean; action?: ReactNode; to?: { href: string; label: string }; className?: string }) {
+  return (
+    <div className={cn('flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule-2 py-3', className)}>
+      <div className="min-w-0 flex-1">
+        <div className={cn('text-ink-2', big ? 'text-[12px] font-medium uppercase tracking-[0.08em] text-ink-3' : 'text-[14px]')}>{label}</div>
         {sub && <div className="mt-0.5 text-[12px] text-ink-3">{sub}</div>}
       </div>
       <div className="flex min-w-0 items-center gap-4">
@@ -117,8 +134,28 @@ export function LedgerRow({ label, sub, value, unit, big, action, className }: {
           {unit && <span className={cn('ml-1.5 font-medium text-ink-3', big ? 'text-[16px]' : 'text-[13px]')}>{unit}</span>}
         </div>
         {action}
+        {to && (
+          <Link href={to.href} className="whitespace-nowrap text-[12px] font-medium text-signal hover:text-signal-2">
+            {to.label} →
+          </Link>
+        )}
       </div>
     </div>
+  );
+}
+
+/** Native disclosure for the longer explanation under a form; the one visible helper sentence stays outside. */
+export function Details({ summary = 'Details', children, className }: { summary?: string; children: ReactNode; className?: string }) {
+  return (
+    <details className={cn('group text-[12px] text-ink-3', className)}>
+      <summary className="-mx-1 inline-flex cursor-pointer list-none items-center gap-1 rounded-[6px] px-1 font-medium text-ink-3 hover:text-ink-2 [&::-webkit-details-marker]:hidden">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden className="transition-transform duration-150 group-open:rotate-90">
+          <path d="M3.5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        {summary}
+      </summary>
+      <div className="mt-2 flex flex-col gap-1.5 leading-relaxed">{children}</div>
+    </details>
   );
 }
 

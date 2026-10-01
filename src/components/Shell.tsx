@@ -1,5 +1,5 @@
 'use client';
-// App shell: wordmark + PillNav (Dock on phones), surface toggle, wallet; toasts; footer with the live price and contract links.
+// App shell: wordmark + PillNav (Dock on phones), surface toggle, wallet; toasts; one-line footer.
 import { useSyncExternalStore, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -11,8 +11,10 @@ import { ADDR, addrUrl } from '@/lib/contracts/addresses';
 import { mdmPriceUsd } from '@/lib/protocol';
 
 const NAV = [
-  { href: '/', label: 'Stake', icon: <IconStake /> },
-  { href: '/positions', label: 'Positions', icon: <IconPositions /> },
+  { href: '/', label: 'Overview', icon: <IconOverview /> },
+  { href: '/stake', label: 'Stake', icon: <IconStake /> },
+  { href: '/mcu', label: 'MCU', icon: <IconMcu /> },
+  { href: '/credit', label: 'Credit', icon: <IconCredit /> },
   { href: '/protocol', label: 'Protocol', icon: <IconProtocol /> },
 ];
 
@@ -65,42 +67,58 @@ function Footer() {
   ];
   return (
     <footer className="border-t border-rule-2">
-      <div className="mx-auto flex w-full max-w-[1200px] flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 pb-28 pt-5 text-[12px] text-ink-3 min-[720px]:px-8 min-[720px]:pb-6">
-        <p className="num">
-          Reads Base every 12 s · MDM {price !== null ? `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '…'} (Aerodrome pool) · Open source
-        </p>
-        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          {links.map(([name, addr]) => (
-            <li key={name}>
-              <a href={addrUrl(addr)} target="_blank" rel="noreferrer" className="num hover:text-ink-2">
-                {name} <span className="text-ink-3/70">{addr.slice(0, 6)}…{addr.slice(-4)}</span> ↗
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <p className="num mx-auto w-full max-w-[1200px] px-4 pb-28 pt-5 text-[12px] leading-relaxed text-ink-3 min-[720px]:px-8 min-[720px]:pb-6">
+        Reads Base every 12 s · MDM {price !== null ? `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '…'} (Aerodrome pool) · Open source · Contracts on Basescan:{' '}
+        {links.map(([name, addr], i) => (
+          <span key={name}>
+            {i > 0 && ' · '}
+            <a href={addrUrl(addr)} target="_blank" rel="noreferrer" className="hover:text-ink-2">
+              {name} ↗
+            </a>
+          </span>
+        ))}
+      </p>
     </footer>
   );
 }
 
+const icon = { viewBox: '0 0 20 20', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
+
+function IconOverview() {
+  return (
+    <svg {...icon}>
+      <rect x="3" y="3" width="6" height="6" rx="1.5" />
+      <rect x="11" y="3" width="6" height="6" rx="1.5" />
+      <rect x="3" y="11" width="6" height="6" rx="1.5" />
+      <rect x="11" y="11" width="6" height="6" rx="1.5" />
+    </svg>
+  );
+}
 function IconStake() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg {...icon}>
       <path d="M3 13l7 4 7-4M3 9l7 4 7-4M3 5l7 4 7-4" />
     </svg>
   );
 }
-function IconPositions() {
+function IconMcu() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <rect x="3" y="4" width="14" height="12" rx="2" />
-      <path d="M3 9h14M8 9v7" />
+    <svg {...icon}>
+      <rect x="5" y="5" width="10" height="10" rx="2" />
+      <path d="M8 2v3M12 2v3M8 15v3M12 15v3M2 8h3M2 12h3M15 8h3M15 12h3" />
+    </svg>
+  );
+}
+function IconCredit() {
+  return (
+    <svg {...icon}>
+      <path d="M11 2L4 11h6l-1 7 7-9h-6l1-7z" />
     </svg>
   );
 }
 function IconProtocol() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg {...icon}>
       <path d="M3 16c4-9 10-9 14-1" />
       <circle cx="10" cy="10" r="7" />
     </svg>

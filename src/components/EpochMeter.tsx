@@ -3,7 +3,7 @@
 import { Battery, Chip, CountUp, DotField, Noise, SplitFlap } from '@/components/ui';
 import { SCHEDULED_RESERVE_CHANGE } from '@/lib/contracts/addresses';
 import { emissionPerDay, fmtLocal, mcuPerDayCreditUsd, mdmPriceUsd, nextMidnightUtc, quoteCheckOut, secondsToMidnightUtc } from '@/lib/protocol';
-import { Stat, dayIndex, hms, reserveChangePending, shortAddress, shortDateLocal, toNum, useNow, type PanelProps } from './common';
+import { Stat, dayIndex, hms, reserveChangePending, shortAddress, shortDateUtc, toNum, useNow, type PanelProps } from './common';
 
 export function EpochMeter({ protocol, account, connected, readOnly, address }: PanelProps & { address?: string }) {
   const now = useNow();
@@ -73,7 +73,7 @@ export function EpochMeter({ protocol, account, connected, readOnly, address }: 
           <Stat label="Locked per MCU">
             <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <CountUp to={Number.isFinite(rate) ? rate : 0} decimals={2} suffix=" MDM" />
-              {pending && <Chip>{rateAfter.toFixed(2)} from {shortDateLocal(SCHEDULED_RESERVE_CHANGE.executableAt)}</Chip>}
+              {pending && <Chip>{rateAfter.toFixed(2)} from {shortDateUtc(SCHEDULED_RESERVE_CHANGE.executableAt)}</Chip>}
             </span>
           </Stat>
           <Stat label="MDM price">

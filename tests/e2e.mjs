@@ -5,7 +5,7 @@ import { chromium } from '/Users/web3warrior/Code/mordiem-whale-monitor/node_mod
 
 const base = process.argv[2] ?? 'http://localhost:3000';
 const READ_ONLY = '0x8Bf5941d27176242745B716251943Ae4892a3C26';
-const routes = ['/', '/protocol', '/positions', `/a/${READ_ONLY}`];
+const routes = ['/', '/stake', '/mcu', '/credit', '/protocol', `/a/${READ_ONLY}`];
 const viewports = [{ name: 'desktop', width: 1300, height: 950 }, { name: 'phone', width: 390, height: 844, isMobile: true, hasTouch: true }];
 const out = [];
 const ok = (name, cond, extra = '') => out.push(`${cond ? 'PASS' : 'FAIL'} ${name}${extra ? ' ' + extra : ''}`);
@@ -34,6 +34,14 @@ for (const vp of viewports) {
     }
     await ctx.close();
   }
+}
+// The old /positions page redirects to the Overview.
+{
+  const ctx = await browser.newContext({ viewport: { width: 1300, height: 950 } });
+  const page = await ctx.newPage();
+  await page.goto(base + '/positions', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+  ok('/positions redirects to /', new URL(page.url()).pathname === '/', `(landed on ${new URL(page.url()).pathname})`);
+  await ctx.close();
 }
 await browser.close();
 console.log(out.join('\n'));

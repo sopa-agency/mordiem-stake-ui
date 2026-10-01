@@ -1,8 +1,6 @@
-import type { Metadata } from 'next';
-import { PositionsView } from '@/components/PositionsView';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = { title: 'Positions' };
-
+/** The old Positions page: its content lives on the Overview now. */
 export default function PositionsPage() {
-  return <PositionsView />;
+  redirect('/');
 }

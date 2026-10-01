@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getAddress, isAddress } from 'viem';
-import { Dashboard } from '@/components/Dashboard';
+import { Overview } from '@/components/Overview';
 
 type Props = { params: Promise<{ address: string }> };
 
@@ -13,5 +13,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AddressPage({ params }: Props) {
   const { address } = await params;
   if (!isAddress(address, { strict: false })) notFound();
-  return <Dashboard address={getAddress(address)} readOnly />;
+  return <Overview address={getAddress(address)} readOnly />;
 }
