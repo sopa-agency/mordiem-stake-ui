@@ -19,4 +19,4 @@ export const txUrl = (hash: string) => `${BASESCAN}/tx/${hash}`;
 export const addrUrl = (a: string) => `${BASESCAN}/address/${a}`;
 
 /** The one scheduled change we know about: Timelock adjustReserve(+28,500 MCU), executable 2026-10-04 00:05:27 UTC. */
-export const SCHEDULED_RESERVE_CHANGE = { deltaMcu: 28_500, executableAt: 1791158727 } as const;
+export const SCHEDULED_RESERVE_CHANGE = { deltaMcu: 28_500, executableAt: 1791072327 } as const;
