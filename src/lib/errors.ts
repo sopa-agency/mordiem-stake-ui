@@ -39,6 +39,8 @@ const SENTENCES: Record<string, (ctx: ErrorContext) => string> = {
   PausedFlag: () => 'Staking is paused by the guardian; exits still work.',
   AlreadyPausedFlag: () => 'Staking is paused by the guardian; exits still work.',
   NothingToClaim: () => 'Nothing has finished thawing yet.',
+  InsufficientPrincipal: () => 'You do not have that much deposited in this pool.',
+  UnknownAsset: () => 'This pool is not enabled in the contract.',
   NotLive: () => 'The protocol is not live yet.',
   ERC20InsufficientBalance: () => 'You do not have that much.',
   ERC20InsufficientAllowance: () => 'Your approval is too small; approve first.',

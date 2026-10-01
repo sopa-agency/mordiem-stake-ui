@@ -5,7 +5,7 @@ import { chromium } from '/Users/web3warrior/Code/mordiem-whale-monitor/node_mod
 
 const base = process.argv[2] ?? 'http://localhost:3000';
 const READ_ONLY = '0x8Bf5941d27176242745B716251943Ae4892a3C26';
-const routes = ['/', '/stake', '/mcu', '/credit', '/protocol', `/a/${READ_ONLY}`];
+const routes = ['/', '/stake', '/stake/pools', '/mcu', '/credit', '/protocol', `/a/${READ_ONLY}`];
 const viewports = [{ name: 'desktop', width: 1300, height: 950 }, { name: 'phone', width: 390, height: 844, isMobile: true, hasTouch: true }];
 const out = [];
 const ok = (name, cond, extra = '') => out.push(`${cond ? 'PASS' : 'FAIL'} ${name}${extra ? ' ' + extra : ''}`);

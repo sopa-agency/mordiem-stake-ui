@@ -7,7 +7,10 @@ import { fmtAmount, fmtDuration, fmtLocal, fmtUtc, thawProgress } from '@/lib/pr
 export type QueueListProps = {
   items: QueueItem[];
   thawSec: number;
-  token: 'MDM' | 'MCU';
+  /** Token paid out on claim: "MDM", "MCU" or a capital asset symbol. */
+  token: string;
+  /** Token decimals (18 unless the asset says otherwise, e.g. USDC 6). */
+  decimals?: number;
   /** Unix seconds; null before hydration. */
   now: number | null;
   /** Sum of matured items (claimable now). */
@@ -24,9 +27,9 @@ const ringLabel = (remaining: number) => {
   return `${Math.max(1, Math.ceil(remaining / 60))}m`;
 };
 
-export function QueueList({ items, thawSec, token, now, matured, onClaim, busy, readOnly, empty }: QueueListProps) {
+export function QueueList({ items, thawSec, token, decimals = 18, now, matured, onClaim, busy, readOnly, empty }: QueueListProps) {
   const rows = items.map((q, i) => ({ id: `${q.unlockTimestamp}-${i}`, ...q }));
-  const sym = token === 'MDM' ? 'sMDM' : 'MCU';
+  const sym = token === 'MDM' ? 'sMDM' : token;
   return (
     <div className="flex flex-col gap-3">
       <AnimatedList
@@ -40,7 +43,7 @@ export function QueueList({ items, thawSec, token, now, matured, onClaim, busy, 
             <div className="edge flex items-center justify-between gap-3 rounded-control bg-sheet-2 px-4 py-3 ring-1 ring-inset ring-rule-2">
               <div className="num min-w-0 text-[13px]">
                 <div className="font-medium text-ink">
-                  {fmtAmount(q.amount)} {sym} {ready ? 'ready' : 'thawing'}
+                  {fmtAmount(q.amount, decimals)} {sym} {ready ? 'ready' : 'thawing'}
                 </div>
                 <div className="truncate text-ink-3">
                   {ready ? 'Since' : 'Ready'} {fmtLocal(q.unlockTimestamp)} <span className="text-ink-3/80">({fmtUtc(q.unlockTimestamp)})</span>
@@ -59,7 +62,7 @@ export function QueueList({ items, thawSec, token, now, matured, onClaim, busy, 
       />
       {matured > BigInt(0) && !readOnly && onClaim && (
         <Button magnet spark fullWidth loading={busy} onClick={onClaim}>
-          Claim {fmtAmount(matured)} {token}
+          Claim {fmtAmount(matured, decimals)} {token}
         </Button>
       )}
     </div>

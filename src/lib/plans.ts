@@ -3,7 +3,7 @@
 // amounts the error sentences need. No React, no wagmi: unit-tested in plans.test.ts.
 import { maxUint256, type Address } from 'viem';
 import { ADDR } from './contracts/addresses';
-import { coreAbi, erc20Abi, vaultAbi } from './contracts/abis';
+import { capitalAbi, coreAbi, erc20Abi, vaultAbi } from './contracts/abis';
 import { fmtAmount } from './protocol';
 import type { TxPlan, TxStep } from '@/hooks/useTx';
 
@@ -26,6 +26,8 @@ export function labelAmount(x: bigint, decimals = 18): string {
 export function doneTitle(verb: string): string {
   const rules: [RegExp, string][] = [
     [/^Request unstake of\b/, 'Requested unstake of'],
+    [/^Request withdraw of\b/, 'Requested withdraw of'],
+    [/^Deposit\b/, 'Deposited'],
     [/^Check out\b/, 'Checked out'],
     [/^Check in\b/, 'Checked in'],
     [/^Stake\b/, 'Staked'],
@@ -133,6 +135,56 @@ export function buildVaultUnstakePlan(amount: bigint, eligible: bigint): TxPlan 
 /** Vault.claimUnstaked(): pays out every matured MCU queue item. */
 export function buildVaultClaimPlan(matured: bigint): TxPlan {
   return { verb: `Claim ${labelAmount(matured)} MCU`, steps: [vault('Claim unstaked', 'claimUnstaked')] };
+}
+
+// ───────────────────────── Capital pools (CapitalManager) ─────────────────────────
+
+export type CapitalAsset = { sym: string; address: Address; decimals: number };
+
+const capital = (label: string, functionName: string, args: readonly unknown[] = []): TxStep => ({
+  label,
+  kind: 'action',
+  address: ADDR.CapitalManager,
+  abi: capitalAbi,
+  functionName,
+  args,
+});
+
+/** asset.approve(CapitalManager, amount) unless covered, then CapitalManager.deposit(asset, amount). `amount` is in the asset's own decimals. */
+export function buildCapitalDepositPlan(asset: CapitalAsset, amount: bigint, { allowance, unlimited }: ApproveOpts): TxPlan {
+  return {
+    verb: `Deposit ${labelAmount(amount, asset.decimals)} ${asset.sym}`,
+    steps: [
+      {
+        label: 'Approve',
+        kind: 'approve',
+        address: asset.address,
+        abi: erc20Abi,
+        functionName: 'approve',
+        args: [ADDR.CapitalManager, unlimited ? maxUint256 : amount],
+        skip: allowance >= amount,
+      },
+      capital('Deposit', 'deposit', [asset.address, amount]),
+    ],
+  };
+}
+
+/** CapitalManager.requestWithdraw(asset, principal); principal in the contract's units for that asset. */
+export function buildCapitalWithdrawPlan(asset: CapitalAsset, principal: bigint, unitLabel = asset.sym): TxPlan {
+  return {
+    verb: `Request withdraw of ${labelAmount(principal, asset.decimals)} ${unitLabel}`,
+    steps: [capital('Request withdraw', 'requestWithdraw', [asset.address, principal])],
+  };
+}
+
+/** CapitalManager.claimWithdraw(asset): pays every matured queue item (FIFO). */
+export function buildCapitalClaimWithdrawPlan(asset: CapitalAsset, matured: bigint, unitLabel = asset.sym): TxPlan {
+  return { verb: `Claim ${labelAmount(matured, asset.decimals)} ${unitLabel}`, steps: [capital('Claim withdrawal', 'claimWithdraw', [asset.address])] };
+}
+
+/** CapitalManager.claimCapitalRewards(asset): the pool's MDM rewards. */
+export function buildCapitalClaimRewardsPlan(asset: CapitalAsset, pending: bigint): TxPlan {
+  return { verb: `Claim ${labelAmount(pending)} MDM`, steps: [capital('Claim rewards', 'claimCapitalRewards', [asset.address])] };
 }
 
 /** True when the plan will actually send an approve (so the UI shows the "approve unlimited" option). */

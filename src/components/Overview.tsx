@@ -4,6 +4,7 @@
 import type { ReactNode } from 'react';
 import type { Address } from 'viem';
 import { Button, Chip, StarBorder } from '@/components/ui';
+import { useCapital } from '@/hooks/useCapital';
 import { buildClaimRewardsPlan } from '@/lib/plans';
 import { fmtAmount, fmtLocal, fmtUsd, fmtUtc, mcuPerDayCreditUsd } from '@/lib/protocol';
 import { PositionsList } from './CheckOutPanel';
@@ -20,9 +21,18 @@ export function Overview({ address, readOnly = false }: { address?: Address; rea
   const now = useNow();
   const tx = useTxFlow();
 
-  // Thawing across both queues: count, next unlock and which tab owns it.
+  const cap = useCapital(connected ? d.address : undefined);
+  const pools = cap.data?.pools ?? [];
+  const deposited = pools.filter((p) => p.user && p.user.principal > ZERO);
+  const capitalPending = pools.reduce((acc, p) => acc + (p.user?.pending ?? ZERO), ZERO);
+
+  // Thawing across every queue (MDM, MCU vault, capital pools): count, next unlock and which tab owns it.
   const queue = a
-    ? [...a.mdmQueue.map((q) => ({ ...q, tab: '/stake', label: 'Stake' })), ...a.vault.queue.map((q) => ({ ...q, tab: '/credit', label: 'Credit' }))]
+    ? [
+        ...a.mdmQueue.map((q) => ({ ...q, tab: '/stake', label: 'Stake' })),
+        ...a.vault.queue.map((q) => ({ ...q, tab: '/credit', label: 'Credit' })),
+        ...pools.flatMap((p) => (p.user?.queue ?? []).map((q) => ({ ...q, tab: '/stake/pools', label: 'Pools' }))),
+      ]
     : [];
   const next = now === null ? undefined : queue.filter((q) => q.unlockTimestamp > now).sort((x, y) => x.unlockTimestamp - y.unlockTimestamp)[0];
   const readyCount = now === null ? 0 : queue.filter((q) => q.unlockTimestamp <= now).length;
@@ -65,6 +75,29 @@ export function Overview({ address, readOnly = false }: { address?: Address; rea
                 ) : undefined
               }
             />
+            <LedgerRow
+              label="Capital deposited"
+              sub={
+                cap.data ? (
+                  deposited.length > 0 ? (
+                    <span className="mt-1 flex flex-wrap gap-1.5">
+                      {deposited.map((p) => (
+                        <Chip key={p.sym}>
+                          {p.sym === 'wstETH' ? '≈ ' : ''}
+                          {fmtAmount(p.user!.principal, p.decimals, 2)} {p.sym}
+                        </Chip>
+                      ))}
+                    </span>
+                  ) : (
+                    'USDC, wstETH, MOR or VVV earning MDM.'
+                  )
+                ) : undefined
+              }
+              value={cap.data ? String(deposited.length) : '…'}
+              unit={deposited.length === 1 ? 'pool' : 'pools'}
+              to={{ href: '/stake/pools', label: 'Pools' }}
+            />
+            <LedgerRow label="Capital rewards to claim" value={cap.data ? fmtAmount(capitalPending) : '…'} unit="MDM" to={{ href: '/stake/pools', label: 'Pools' }} />
             <LedgerRow label="MCU in wallet" value={v(a?.mcuBalance)} unit="MCU" to={{ href: '/mcu', label: 'MCU' }} />
             <LedgerRow label="MCU eligible today" sub={a ? `${fmtUsd(mcuPerDayCreditUsd(eligible))} of API credit a day` : undefined} value={v(a?.vault.eligible)} unit="MCU" to={{ href: '/credit', label: 'Credit' }} />
             <LedgerRow

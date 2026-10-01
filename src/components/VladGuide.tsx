@@ -12,19 +12,25 @@ const HOME = 'https://skatehive.app';
 /** Plain words, short sentences, one idea each. */
 export function explain(path: string, nowSec: number): string {
   const before = nowSec < SCHEDULED_RESERVE_CHANGE.executableAt;
+  if (path.startsWith('/stake/pools')) {
+    return 'The capital pools take USDC, wstETH, MOR or VVV. Your principal stays yours. The yield those assets earn goes to the protocol, and you are paid in MDM from the capital half of the emission, in proportion to the real yield your pool brought in over the last 90 days. Withdrawals thaw for 7 days; MOR and VVV can add their venue’s own waiting windows.';
+  }
   if (path.startsWith('/stake')) {
-    return 'Staking is putting your MDM coins in a piggy bank. Every day the bank adds a few more coins to yours. When you want coins back, you ask and wait 7 days. That wait is the bank making sure nobody runs off in a hurry. Coins you used for an MCU battery only earn half while they are busy.';
+    return 'Staking turns MDM into sMDM one to one. Free sMDM earns the full staker share of the emission; sMDM locked behind MCU earns half. To leave, request an unstake and wait 7 days; it stops earning the moment you ask. Rewards accrue continuously and you can claim them whenever you like.';
   }
   if (path.startsWith('/mcu')) {
-    return `An MCU is a battery. While it is plugged in, it gives you $1 of AI every day. To get one you lock some MDM coins, like a deposit at the library. Give the battery back and every coin comes home. Right now one battery needs about 250 coins${before ? '; from Oct 4 it will need only 12 and a half.' : '.'}`;
+    const rate = before
+      ? 'Today one MCU takes about 250 MDM; after Oct 4 the reserve change brings that to about 12.5.'
+      : 'One MCU takes about 12.5 MDM now.';
+    return `Checking out MCU locks part of your free sMDM on the bonding curve: the more MCU already out, the more sMDM each new one needs. It is a loan, not a sale: check the MCU back in and you get exactly the sMDM you locked. ${rate} Locked sMDM earns half, so weigh the credit against the rewards you give up.`;
   }
   if (path.startsWith('/credit')) {
-    return 'This is where you plug in your MCU batteries. Every midnight (UTC time) each plugged battery fills up with $1 of AI for the day. Unplug one and its juice stops right away. You get the battery back in your hands one day later.';
+    return 'Stake MCU in the vault and each one becomes $1 of API credit per day. Credit is set at midnight UTC from the MCU you had staked at that moment. Request an unstake and that MCU leaves eligibility immediately; after 24 hours you can claim it back. New stake during a thaw only counts from the next midnight.';
   }
   if (path.startsWith('/protocol')) {
-    return 'Every day the game prints new MDM coins. Half go to the people with coins in the piggy bank. Half go to people who lent other things to the game. It prints one more coin each day than the day before, so your slice gets a little thinner unless the piggy bank grows too.';
+    return 'Emission follows a fixed curve from genesis: day n issues about n MDM, so the daily amount grows by one each day. Half goes to sMDM stakers, half to capital providers, weighted by the real USDC yield each pool delivered over the last 90 days. The treasury can buy MDM with that yield and burn it, on its own schedule.';
   }
-  return 'Think of MDM as your coins. Put them in the piggy bank (that is staking) and you get a few more coins every day. If you want to use the Mordiem AI, you trade some coins for a little battery called MCU. Everything on this site is just those two things, with every cost written on the screen.';
+  return 'Here is the whole thing. Stake MDM and it becomes sMDM, which earns a share of the daily emission. Lock sMDM to check out MCU; each MCU you stake in the vault is $1 of Mordiem API credit per day. Every number on this site comes straight from the contracts on Base, including what each move costs you.';
 }
 
 export function VladGuide() {

@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { maxUint256 } from 'viem';
 import { ADDR } from './contracts/addresses';
-import { coreAbi, erc20Abi, vaultAbi } from './contracts/abis';
+import { capitalAbi, coreAbi, erc20Abi, vaultAbi } from './contracts/abis';
+import { parseAmount } from './protocol';
 import {
+  buildCapitalClaimRewardsPlan,
+  buildCapitalClaimWithdrawPlan,
+  buildCapitalDepositPlan,
+  buildCapitalWithdrawPlan,
   buildCheckInPlan,
   buildCheckOutPlan,
   buildClaimRewardsPlan,
@@ -104,6 +109,49 @@ describe('MCU check-out / check-in', () => {
     expect(plan.verb).toBe('Check in 0.50 MCU');
     expect(plan.steps[0]).toMatchObject({ address: ADDR.Core, functionName: 'checkIn' });
     expect(plan.steps[0].args).toEqual([WAD / BigInt(2)]);
+  });
+});
+
+describe('Capital pools', () => {
+  const USDC = { sym: 'USDC', address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const, decimals: 6 };
+  const MOR = { sym: 'MOR', address: '0x7431ada8a591c955a994a21710752ef9b882b8e3' as const, decimals: 18 };
+
+  it('deposit parses USDC at 6 decimals, approves the asset to CapitalManager when short, then deposits', () => {
+    const amount = parseAmount('300', USDC.decimals);
+    expect(amount).toBe(BigInt(300_000_000));
+    const plan = buildCapitalDepositPlan(USDC, amount!, { allowance: BigInt(0) });
+    expect(plan.verb).toBe('Deposit 300.00 USDC');
+    const [approve, deposit] = plan.steps;
+    expect(approve).toMatchObject({ kind: 'approve', address: USDC.address, functionName: 'approve', skip: false });
+    expect(approve.abi).toBe(erc20Abi);
+    expect(approve.args).toEqual([ADDR.CapitalManager, BigInt(300_000_000)]);
+    expect(deposit).toMatchObject({ kind: 'action', address: ADDR.CapitalManager, functionName: 'deposit' });
+    expect(deposit.abi).toBe(capitalAbi);
+    expect(deposit.args).toEqual([USDC.address, BigInt(300_000_000)]);
+    expect(needsApprove(plan)).toBe(true);
+  });
+
+  it('deposit skips the approve when the allowance covers it and honours unlimited', () => {
+    expect(buildCapitalDepositPlan(USDC, BigInt(1_000_000), { allowance: BigInt(1_000_000) }).steps[0].skip).toBe(true);
+    expect(buildCapitalDepositPlan(MOR, WAD, { allowance: BigInt(0), unlimited: true }).steps[0].args).toEqual([ADDR.CapitalManager, maxUint256]);
+    expect(buildCapitalDepositPlan(MOR, WAD, { allowance: BigInt(0) }).verb).toBe('Deposit 1.00 MOR');
+  });
+
+  it('withdraw, claim withdraw and claim rewards target the asset', () => {
+    const w = buildCapitalWithdrawPlan(MOR, WAD * BigInt(10));
+    expect(w.verb).toBe('Request withdraw of 10.00 MOR');
+    expect(w.steps[0]).toMatchObject({ address: ADDR.CapitalManager, functionName: 'requestWithdraw' });
+    expect(w.steps[0].args).toEqual([MOR.address, WAD * BigInt(10)]);
+    expect(doneTitle(w.verb)).toBe('Requested withdraw of 10.00 MOR');
+
+    const c = buildCapitalClaimWithdrawPlan(USDC, BigInt(300_000_000));
+    expect(c.verb).toBe('Claim 300.00 USDC');
+    expect(c.steps[0]).toMatchObject({ address: ADDR.CapitalManager, functionName: 'claimWithdraw', args: [USDC.address] });
+
+    const r = buildCapitalClaimRewardsPlan(MOR, mdm(0.05));
+    expect(r.verb).toBe('Claim 0.05 MDM');
+    expect(r.steps[0]).toMatchObject({ address: ADDR.CapitalManager, functionName: 'claimCapitalRewards', args: [MOR.address] });
+    expect(doneTitle('Deposit 300.00 USDC')).toBe('Deposited 300.00 USDC');
   });
 });
 
