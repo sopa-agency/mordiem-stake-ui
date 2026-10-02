@@ -63,16 +63,17 @@ export function EpochMeter({ protocol, account, connected, readOnly, address }: 
         </div>
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-6 self-center min-[900px]:gap-y-9 min-[900px]:border-l min-[900px]:border-rule-2 min-[900px]:pl-8">
-          <Stat label="Emission today">
-            <CountUp to={emissionPerDay(t)} decimals={1} suffix=" MDM" />
-            <span className="ml-1 text-[13px] font-medium text-ink-3">/ day</span>
+          <Stat label="New MDM per day">
+            <CountUp to={emissionPerDay(t)} decimals={1} />
+            <span className="ml-1.5 font-body text-[13px] font-medium text-ink-3">MDM / day</span>
           </Stat>
           <Stat label="Staked by everyone">
-            <CountUp to={toNum(protocol?.totalStaked)} decimals={2} suffix=" MDM" />
+            <CountUp to={toNum(protocol?.totalStaked)} decimals={2} />
+            <span className="ml-1.5 font-body text-[13px] font-medium text-ink-3">MDM</span>
           </Stat>
           <Stat label="Locked per MCU">
             <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <CountUp to={Number.isFinite(rate) ? rate : 0} decimals={2} suffix=" MDM" />
+              <span><CountUp to={Number.isFinite(rate) ? rate : 0} decimals={2} /><span className="ml-1.5 font-body text-[13px] font-medium text-ink-3">MDM</span></span>
               {pending && <Chip>{rateAfter.toFixed(2)} from {shortDateUtc(SCHEDULED_RESERVE_CHANGE.executableAt)}</Chip>}
             </span>
           </Stat>
